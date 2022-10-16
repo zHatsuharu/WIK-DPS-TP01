@@ -1,5 +1,5 @@
-use std::collections::HashMap;
-use actix_web::{get, App, HttpResponse, HttpServer, http::header::{HeaderMap}, HttpRequest, Responder};
+use std::{collections::HashMap, env};
+use actix_web::{get, App, HttpResponse, HttpServer, http::{header::{HeaderMap}, StatusCode}, HttpRequest, Responder, web::{self}};
 
 #[get("/ping")]
 async fn ping(req: HttpRequest) -> impl Responder {
@@ -16,13 +16,23 @@ fn convert(headers: &HeaderMap) -> HashMap<String, Vec<String>> {
     header_hashmap
 }
 
+async fn not_found() -> impl Responder {
+    HttpResponse::build(StatusCode::NOT_FOUND).body("404")
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    let key: &str = "PING_LISTEN_PORT";
+    let port = match env::var(key) {
+        Ok(val) => val,
+        Err(_) => 8080.to_string(),
+    };
     HttpServer::new(|| {
         App::new()
             .service(ping)
+            .default_service(web::route().to(not_found))
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind(("127.0.0.1", port.parse().unwrap()))?
     .run()
     .await
 }
