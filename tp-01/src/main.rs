@@ -1,14 +1,9 @@
 use std::collections::HashMap;
-use actix_web::{get, App, HttpResponse, HttpServer, http::header::{HeaderMap, HeaderValue, self}, web, HttpRequest, Responder};
-use serde_json::{Result, Value};
+use actix_web::{get, App, HttpResponse, HttpServer, http::header::{HeaderMap}, HttpRequest, Responder};
 
 #[get("/ping")]
 async fn ping(req: HttpRequest) -> impl Responder {
     HttpResponse::Ok().json(convert(req.headers()))
-}
-
-fn get_host<'a>(req: &'a HttpRequest) -> Option<&'a str> {
-    req.headers().get("host")?.to_str().ok()
 }
 
 fn convert(headers: &HeaderMap) -> HashMap<String, Vec<String>> {
